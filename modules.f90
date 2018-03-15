@@ -56,6 +56,7 @@
 	    logical :: counts_radial = .false. !does not include time delay;
 	    ! subset of counts_velocity, just 1/(chi*H) term
 	    logical :: counts_density = .true.
+		logical :: counts_density_newt = .false.
 	    logical :: counts_redshift = .false.
 	    logical :: counts_timedelay = .false. !time delay terms * 1/(H*chi)
 	    logical :: counts_ISW = .false.
@@ -64,12 +65,13 @@
 		logical :: DoRedshiftLensing = .false.
 		logical :: Dofnlder = .false.
 		logical :: Dobder = .false.
+		logical :: Dogamder = .false.
 		
 		
     end Type TRedWin
 
 
-    integer, parameter :: max_redshiftwindows  = 60
+    integer, parameter :: max_redshiftwindows  = 250
     logical :: limber_windows = .false.
     
 
@@ -160,7 +162,7 @@
 	!	counts_background_z= z**2*exp(-(z/0.63739)**1.5)
 	elseif (Win%dNdz == euclid_spectr) then
 		!for spectroscopic galaxy survey fit from Ha LF model 3 of arXiv:1603.01453
-		counts_background_z= (z**1.2831)*exp(-2.3239*z-0.6135*z**2+0.2638*z**3-0.0301*z**4)
+		counts_background_z= (z**1.281)*exp(-2.317*z-0.617*z**2+0.265*z**3-0.030*z**4)
 	!elseif (Win%dNdz == lsst_red) then
 		!N(Z) computed from arxiv:1505.07596; fit to determine parameters
 		!threshold mag r=26.3
@@ -4051,7 +4053,7 @@
 						RedWin%comoving_density_ev(ix) = 0
 					elseif (RedWin%comoving_density_ev(ix)==0) then
 						RedWin%comoving_density_ev(ix) = 0
-					elseif (RedWin%dNdz == hiim) then
+					elseif (RedWin%dNdz == hiim .or. RedWin%dNdz == halpha) then
 						RedWin%comoving_density_ev(ix) = CP%eps_IM*tmp2(ix) / RedWin%comoving_density_ev(ix)
 					else
 						!correction needs to be introduced from total derivative to parcial derivative

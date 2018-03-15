@@ -65,6 +65,7 @@
 		logical :: dkc !logical for analytical derivatives
 		logical :: dlc
 		logical :: expcor
+		logical :: dns, das, dbs
 		
     end Type InitialPowerParams
 
@@ -94,6 +95,11 @@
     AP%ScalarPowerAmp = 1
     AP%TensorPowerAmp = 1
     AP%tensor_parameterization = tensor_param_indeptilt
+	
+	!derivatives with respect to spectral index and runnings
+	AP%dns = .false.
+	AP%das = .false.
+	AP%dbs = .false.
 	
 	!Exponential corrections as primordial features
 	AP%pri_k_c = 3.388e-04
@@ -149,13 +155,29 @@
     lnrat = log(k/P%k_0_scalar)
     p_normal=P%ScalarPowerAmp(ix)*exp(lnrat*( P%an(ix)-1 + lnrat*(P%n_run(ix)/2 + P%n_runrun(ix)/6*lnrat)))
 	if (P%expcor) then
-		ScalarPower=p_normal*(1-exp(-(k/P%pri_k_c)**P%pri_l_c))
-	else if (P%dkc) then
-		ScalarPower=-p_normal*exp(-(k/P%pri_k_c)**P%pri_l_c)*P%pri_l_c*((k/P%pri_k_c)**P%pri_l_c)/P%pri_k_c
-	else if (P%dlc) then
-		ScalarPower=p_normal*exp(-(k/P%pri_k_c)**P%pri_l_c)*((k/P%pri_k_c)**P%pri_l_c)*log(k/P%pri_k_c)
+		if (P%dkc) then
+			ScalarPower=-p_normal*exp(-(k/P%pri_k_c)**P%pri_l_c)*P%pri_l_c*((k/P%pri_k_c)**P%pri_l_c)/P%pri_k_c
+		else if (P%dlc) then
+			ScalarPower=p_normal*exp(-(k/P%pri_k_c)**P%pri_l_c)*((k/P%pri_k_c)**P%pri_l_c)*log(k/P%pri_k_c)
+		else if (P%dns) then
+			ScalarPower=p_normal*lnrat*(1-exp(-(k/P%pri_k_c)**P%pri_l_c))
+		else if (P%das) then
+			ScalarPower=p_normal*lnrat*lnrat/2*(1-exp(-(k/P%pri_k_c)**P%pri_l_c))
+		else if (P%dbs) then
+			ScalarPower=p_normal*lnrat*lnrat*lnrat/6*(1-exp(-(k/P%pri_k_c)**P%pri_l_c))
+		else
+			ScalarPower=p_normal*(1-exp(-(k/P%pri_k_c)**P%pri_l_c))
+		end if
 	else
-		ScalarPower=p_normal
+		if (P%dns) then
+			ScalarPower=p_normal*lnrat
+		else if (P%das) then
+			ScalarPower=p_normal*lnrat*lnrat/2
+		else if (P%dbs) then
+			ScalarPower=p_normal*lnrat*lnrat*lnrat/6
+		else
+			ScalarPower=p_normal
+		end if
 	end if
 
     !         ScalarPower = ScalarPower * (1 + 0.1*cos( lnrat*30 ) )
@@ -247,6 +269,10 @@
 	InitPower%dkc = Ini_read_Logical('dkc',.false.)
 	InitPower%dlc = Ini_read_Logical('dlc',.false.)
 	
+	!derivatives of the primordial power spectrum
+	InitPower%dns = Ini_read_Logical('dn_s',.false.)
+	InitPower%das = Ini_read_Logical('dalpha_s',.false.)
+	InitPower%dbs = Ini_read_Logical('dbeta_s',.false.)
 	
     if (InitPower%nn>nnmax) call MpiStop('Too many initial power spectra - increase nnmax in InitialPower')
     if (WantTensors) then

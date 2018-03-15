@@ -152,6 +152,7 @@
 			
 			if (DoTermsW) then
 				RedWin%counts_density = Ini_read_Logical('counts_density('//trim(numstr)//')',.false.)
+				RedWin%counts_density_newt = Ini_read_Logical('counts_density_newt('//trim(numstr)//')',.false.)
 				RedWin%counts_redshift = Ini_read_Logical('counts_redshift('//trim(numstr)//')',.false.)
 				RedWin%counts_radial = Ini_read_Logical('counts_radial('//trim(numstr)//')',.false.)
 				RedWin%counts_evolve = Ini_read_Logical('counts_evolve('//trim(numstr)//')',.false.)
@@ -162,8 +163,10 @@
 			    RedWin%DoRedshiftLensing = Ini_Read_Logical('DoRedshiftLensing('//trim(numstr)//')',.false.)
 				RedWin%Dofnlder = Ini_read_Logical('Dofnlder('//trim(numstr)//')',.false.)
 				RedWin%Dobder = Ini_read_Logical('Dobder('//trim(numstr)//')',.false.)
+				RedWin%Dogamder = Ini_read_Logical('Dogamder('//trim(numstr)//')',.false.)
 			else
 				RedWin%counts_density = Ini_read_Logical('counts_density',.false.)
+				RedWin%counts_density_newt = Ini_read_Logical('counts_density_newt',.false.)
 				RedWin%counts_redshift = Ini_read_Logical('counts_redshift',.false.)
 				RedWin%counts_radial = Ini_read_Logical('counts_radial',.false.)
 				RedWin%counts_evolve = Ini_read_Logical('counts_evolve',.false.)
@@ -174,6 +177,7 @@
 			    RedWin%DoRedshiftLensing = Ini_Read_Logical('DoRedshiftLensing',.false.)
 				RedWin%Dofnlder = .false.
 				RedWin%Dobder = .false.
+				RedWin%Dogamder = .false.
 			end if
             if (RedWin%DoRedshiftLensing) then
                 num_extra_redshiftwindows=num_extra_redshiftwindows+1

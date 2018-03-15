@@ -1413,8 +1413,9 @@
     real(dl) cs2, xe,opacity, delta_p
     real(dl) s(0:10), t(0:10)
     real(dl) counts_radial_source, counts_velocity_source, counts_density_source, counts_ISW_source, &
-        counts_redshift_source, counts_timedelay_source, counts_potential_source
-	real(dl) counts_dfnl_source, counts_db_source
+        counts_redshift_source, counts_timedelay_source, counts_potential_source, counts_density_newt_source
+	real(dl) counts_dfnl_source, counts_db_source, counts_dgam_source
+	real(dl) counts_redshift_source_gamma, counts_velocity_source_gamma 
 
     sources = 0
 
@@ -1689,13 +1690,19 @@
                     !Main density source
                     if (W%counts_density) then
                         counts_density_source= W%wing(j)*(clxc*(W%bias + 3*(W%bias - 1)*(CP%omegab + CP%omegac)*1.686  &
-                             *CP%h0**2*CP%fNL/(2.99792458e5_dl**2*dgrho/grho/CP%SCtransferTOT)) &
-                             + (W%comoving_density_ev(j) - 3*adotoa)*sigma/k) 
-                        !Newtonian gauge count density; bias assumed to be on synchronous gauge CDM density
+                             *CP%h0**2*CP%fNL/(2.99792458e5_dl**2*dgrho/grho/CP%SCtransferTOT))) 
 						!ze:correction to the bias due to fnl included - Ref_change: Stefano Camera
 						!fnl and normalisation are input parameters
                     else
                         counts_density_source= 0
+                    endif
+					
+					!correction to synchronous density contrast 
+                    if (W%counts_density_newt) then
+                        counts_density_newt_source= W%wing(j)*((W%comoving_density_ev(j) - 3*adotoa)*sigma/k) 
+                        !Newtonian gauge count density; bias assumed to be on synchronous gauge CDM density
+                    else
+                        counts_density_newt_source= 0
                     endif
 
 
@@ -1774,10 +1781,30 @@
                     else
                         counts_db_source= 0
                     endif
+					
+                    if (W%Dogamder) then
+						counts_velocity_source = (-2.D0*W%wingtau(j)*adotoa+W%dwingtau(j))/k*sigma+W%wingtau(j)*etak/k/EV%Kf(1)
+						counts_redshift_source = ((4.D0*adotoa**2+gpres+grho/3.D0)/k*W%wing2(j)+ &
+                            (-4.D0*W%dwing2(j)*adotoa+W%ddwing2(j))/k)*sigma+(-etak/adotoa*k/3.D0-dgrho/ &
+                            adotoa/6.D0+(etak/adotoa*k/3.D0+dgrho/adotoa/6.D0+(dgq/2.D0-2.D0*etak*adotoa)/k) &
+                            /EV%Kf(1))*W%wing2(j)+2.D0*W%dwing2(j)*etak/k/EV%Kf(1)
+						counts_density_newt_source = W%wing(j)*((W%comoving_density_ev(j) - 3*adotoa)*sigma/k)
+						
+												
+						counts_dgam_source= (log(CP%omegab + CP%omegac)-3*log(a)-log((CP%omegab + CP%omegac)/a/a/a+1-(CP%omegab + CP%omegac))) &
+							*(counts_velocity_source+counts_redshift_source+counts_density_newt_source)
+							
+						counts_velocity_source = 0
+						counts_redshift_source = 0
+						counts_density_newt_source = 0
+							
+                    else
+                        counts_dgam_source= 0
+                    endif
 
-                    sources(3+w_ix)= counts_density_source + counts_redshift_source + counts_ISW_source &
+                    sources(3+w_ix)= counts_density_source + counts_density_newt_source + counts_redshift_source + counts_ISW_source &
 					    + counts_radial_source + counts_timedelay_source + counts_potential_source + counts_velocity_source &
-						+ counts_dfnl_source + counts_db_source
+						+ counts_dfnl_source + counts_db_source + counts_dgam_source
 
                     sources(3+w_ix)=sources(3+w_ix)/W%Fq
 
