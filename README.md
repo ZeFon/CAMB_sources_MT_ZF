@@ -1,6 +1,6 @@
 # CAMB_sources_MT
 
-This is a modification to CAMB_sources that allows for:
+This is a modification to [CAMB_sources](https://github.com/cmbant/CAMB/tree/CAMB_sources) that allows for:
 - multiple window functions;
 - multiple redshift distribution of sources;
 - multiple tracers;
